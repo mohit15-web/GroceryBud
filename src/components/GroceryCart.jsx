@@ -1,9 +1,21 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import "../index.css";
+import GroceryTask from "./GroceryTask";
 function GroceryCart() {
   const [GroceryInput, setGroceryInput] = useState("");
   const [GroceryList, setGroceryList] = useState([]);
+
+  
+  useEffect(() => {
+    const storedArr = localStorage.getItem('GroceryList')
+    if(storedArr){
+      setGroceryList(JSON.parse(storedArr))
+    }
+  },[])
+
+    useEffect(() => {
+      localStorage.setItem('GroceryList',JSON.stringify(GroceryList))
+    },[GroceryList])
 
   //Add Items
   const handleAddItem = () => {
@@ -17,7 +29,7 @@ function GroceryCart() {
       return;
     }
 
-    setGroceryList([...GroceryList, { GroceryItem: GroceryInput }]);
+    setGroceryList([...GroceryList, { GroceryItem: GroceryInput,isChecked:false,  }]);
     setGroceryInput("");
     toast.success("Item Added To The List", {
       position: "top-center",
@@ -36,15 +48,18 @@ function GroceryCart() {
 
   //handle strike
   const handleStrike = (idx) => {
-    console.log("checked");
-    setGroceryList(
-      GroceryList.map((item, index) => {
-        if (idx === index) {
-          return { ...item, isStriked: !item.isStriked };
-        }
-        return item;
-      })
-    );
+    const newFilteredArr = GroceryList.map((item,index) => {
+      if (index === idx) {
+        item.isChecked = !item.isChecked;
+      }
+      return item;
+    });
+
+    setGroceryList(newFilteredArr);
+    toast.success("Item checked", {
+      position: "top-center",
+      theme: "colored",
+    });
   };
 
   return (
@@ -66,22 +81,14 @@ function GroceryCart() {
         </div>
         <ul>
           {GroceryList.map((item, idx) => (
-            <li className="flex justify-between pt-6 " key={idx}>
-              <div
-                className={`flex justify-center items-center gap-2 ${
-                  item.isStriked ? "striked" : ""
-                }`}
-              >
-                <input type="checkbox" onClick={() => handleStrike(idx)} />
-                {item.GroceryItem}
-              </div>
-              <button
-                className="bg-black text-white px-2"
-                onClick={() => handleDelete(idx)}
-              >
-                Delete
-              </button>
-            </li>
+            <GroceryTask
+            id={idx}
+            item ={item.GroceryItem}
+            handleDeletefunc={handleDelete}
+            handleStrikefunc={handleStrike}
+            isChecked={item.isChecked}
+            GroceryList={GroceryList}
+            />
           ))}
         </ul>
       </div>
