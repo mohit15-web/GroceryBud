@@ -1,11 +1,25 @@
-import React, { useEffect, useState } from "react";
+import  { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import GroceryTask from "./GroceryTask";
 function GroceryCart() {
   const [GroceryInput, setGroceryInput] = useState("");
   const [GroceryList, setGroceryList] = useState([]);
-
-  
+  const[editId  , setEditId] = useState(null)
+  const[edit,setEdit] = useState("")
+  const handleEdit = (id,item) => {
+    setEditId(id)
+    setEdit(item)
+  }
+  const handleEditSave  = (index) => {
+    let editedArr = GroceryList.map((item,id) => id === index ? {GroceryItem:edit,isChecked:false} : item )
+    setGroceryList(editedArr)
+    toast.success("Grocery Updated", {
+      position: "top-center",
+      theme: "colored",
+    });
+    setEditId()
+    setEdit("")
+  }
   useEffect(() => {
     const storedArr = localStorage.getItem('GroceryList')
     if(storedArr){
@@ -47,7 +61,7 @@ function GroceryCart() {
   };
 
   //handle strike
-  const handleStrike = (idx) => {
+  const handleStrike = (idx,isChecked) => {
     const newFilteredArr = GroceryList.map((item,index) => {
       if (index === idx) {
         item.isChecked = !item.isChecked;
@@ -56,10 +70,12 @@ function GroceryCart() {
     });
 
     setGroceryList(newFilteredArr);
+   if(!isChecked){
     toast.success("Item checked", {
       position: "top-center",
       theme: "colored",
     });
+   }
   };
 
   return (
@@ -82,12 +98,19 @@ function GroceryCart() {
         <ul>
           {GroceryList.map((item, idx) => (
             <GroceryTask
+            key={idx}
             id={idx}
             item ={item.GroceryItem}
             handleDeletefunc={handleDelete}
             handleStrikefunc={handleStrike}
             isChecked={item.isChecked}
             GroceryList={GroceryList}
+            editId={editId}
+            setEditId={setEditId}
+            handleEdit={handleEdit}
+            handleEditSave={handleEditSave}
+            setEdit={setEdit}
+            edit={edit}
             />
           ))}
         </ul>
